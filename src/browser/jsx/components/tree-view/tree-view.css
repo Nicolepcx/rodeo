@@ -1,0 +1,15 @@
+.tree-view {
+  border: 1px dashed lightgoldenrodyellow;
+}
+
+.tree-view-item {
+  margin-left: 10px;
+}
+
+.tree-view-item .tree-view-caret {
+  margin-right: 5px;
+}
+
+.tree-view-item.expanded > .tree-view-caret {
+  transform: rotate(90deg);
+}

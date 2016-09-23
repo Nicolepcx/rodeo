@@ -11,6 +11,18 @@ export function getInitialState() {
   };
 }
 
+function applyTreeView(files) {
+  return _.map(files, file => {
+    file.label = file.filename;
+
+    if (file.isDirectory) {
+      file.expandable = true;
+    }
+
+    return file;
+  });
+}
+
 function setViewedPath(state, action) {
   console.log('setViewedPath', action);
 
@@ -18,7 +30,7 @@ function setViewedPath(state, action) {
   state.path = action.path;
 
   if (action.files) {
-    state.files = action.files;
+    state.files = applyTreeView(action.files);
   } else {
     state.files = [];
   }
@@ -33,7 +45,7 @@ function setFileList(state, action) {
   // Only accept the one that matches what we're current viewing.
   if (state.path === action.path) {
     state = _.clone(state);
-    state.files = action.files;
+    state.files = applyTreeView(action.files);
   }
 
   return state;
@@ -77,9 +89,45 @@ function changePreference(state, action) {
   }
 }
 
+function followIndexPath(items, indexPath) {
+  let index = indexPath.shift(),
+    cursor = items[index];
+
+  while (indexPath.length) {
+    index = indexPath.shift();
+    if (cursor.items && cursor.items[index]) {
+      index = indexPath.shift();
+      cursor = cursor.items[index];
+    } else {
+      return null;
+    }
+  }
+
+  return cursor;
+}
+
+function folderExpanded(state, action) {
+  state = _.cloneDeep(state);
+
+  const indexPath = _.clone(action.indexPath),
+    files = state.files;
+
+  if (indexPath.length > 0 && state.path === action.path) {
+    const file = followIndexPath(files, indexPath);
+
+    if (file) {
+      file.items = action.files;
+      file.expanded = true;
+    }
+  }
+
+  return state;
+}
+
 export default mapReducers({
   SET_VIEWED_PATH: setViewedPath,
   LIST_VIEWED_FILES: setFileList,
   SELECT_VIEWED_FILE: selectFile,
+  FILE_VIEWER_FOLDER_EXPANDED: folderExpanded,
   PREFERENCE_CHANGE_SAVED: changePreference
 }, getInitialState());

@@ -1,8 +1,7 @@
 import _ from 'lodash';
 import {connect} from 'react-redux';
 import React from 'react';
-import FileList from '../../components/file-list/file-list.jsx';
-import FileListItem from '../../components/file-list/file-list-item.jsx';
+import FileTree from '../../components/files/file-tree.jsx';
 import fileViewerActions from './file-viewer.actions.js';
 
 function mapStateToProps(state) {
@@ -14,7 +13,8 @@ function mapDispatchToProps(dispatch) {
     onRefresh: (filePath) => dispatch(fileViewerActions.getViewedFiles(filePath)),
     onClick: (file) => dispatch(fileViewerActions.selectViewedFile(file)),
     onOpenFile: (file) => dispatch(fileViewerActions.openViewedFile(file)),
-    onGoToParentDirectory: (file) => dispatch(fileViewerActions.goToParentDirectory(file))
+    onGoToParentDirectory: (file) => dispatch(fileViewerActions.goToParentDirectory(file)),
+    onExpandItem: indexPath => dispatch(fileViewerActions.expandItem(indexPath))
   };
 }
 
@@ -72,7 +72,6 @@ export default connect(mapStateToProps, mapDispatchToProps)(React.createClass({
     const props = this.props;
     let files = props.files;
 
-
     if (props.filter) {
       files = _.filter(files, item => item.filename.indexOf(props.filter) > -1);
     }
@@ -81,21 +80,6 @@ export default connect(mapStateToProps, mapDispatchToProps)(React.createClass({
       files = _.filter(files, item => !isDotFile(item.filename));
     }
 
-    return (
-      <FileList onGoToParent={props.onGoToParentDirectory}>
-        {files.map(file => {
-          return (
-            <FileListItem
-              basePath={props.path}
-              id={file.id}
-              key={file.id}
-              onClick={_.partial(props.onClick, file)}
-              onDoubleClick={_.partial(props.onOpenFile, file)}
-              {...file}
-            />
-          );
-        })}
-      </FileList>
-    );
+    return <FileTree files={files} onExpandItem={props.onExpandItem} onGoToParent={props.onGoToParentDirectory} />;
   }
 }));

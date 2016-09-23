@@ -79,7 +79,6 @@ export default React.createClass({
       state = this.state;
     let items;
 
-
     // flatten type with the rest; give a unique id to use as the key
     items = _.flatten(_.map(props.variables, function (list, type) {
       return _.map(list, function (variable) {

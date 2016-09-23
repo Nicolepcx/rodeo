@@ -75,10 +75,40 @@ export function goToParentDirectory() {
   };
 }
 
+function followIndexPath(items, indexPath) {
+  let index = indexPath.shift(),
+    cursor = items[index];
+
+  while (indexPath.length) {
+    index = indexPath.shift();
+    if (cursor.items && cursor.items[index]) {
+      index = indexPath.shift();
+      cursor = cursor.items[index];
+    } else {
+      return null;
+    }
+  }
+
+  return cursor;
+}
+
+function expandItem(indexPath) {
+  return function (dispatch, getState) {
+    const fileView = getState().fileView,
+      files = fileView.files,
+      file = followIndexPath(files, indexPath);
+
+    return send('files', file.path)
+      .then(files => dispatch({type: 'FILE_VIEWER_FOLDER_EXPANDED', path: fileView.path, indexPath, files}))
+      .catch(error => console.error(error));
+  };
+}
+
 export default {
   openViewedFile,
   selectViewedFile,
   setViewedPath,
   getViewedFiles,
-  goToParentDirectory
+  goToParentDirectory,
+  expandItem
 };
